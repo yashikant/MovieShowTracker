@@ -4,9 +4,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import MyListScreen from './MyListScreen';
 
-const Home =()=>{
+const Home = () => {
   const Tab = createBottomTabNavigator();
-  return(
+  return (
     <Tab.Navigator screenOptions={({ route }) => ({
       tabBarIcon: ({ color, size }) => {
         let iconName;
@@ -17,12 +17,12 @@ const Home =()=>{
         }
         return <Ionicons name={iconName} size={size} color={color} />;
       },
-      tabBarShowLabel: false, 
-       headerShown: false // Hides the tab label
+      tabBarShowLabel: false,
+      headerShown: false // Hides the tab label
     })}>
-    <Tab.Screen name="Home" component={HomeScreen} />
-    <Tab.Screen name="MyList" component={MyListScreen} />
-  </Tab.Navigator>
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="MyList" component={MyListScreen} />
+    </Tab.Navigator>
   )
 }
 const HomeScreen = ({ navigation }) => {
@@ -32,7 +32,7 @@ const HomeScreen = ({ navigation }) => {
   const [isSorted, setIsSorted] = useState(false);
   const [filterType, setFilterType] = useState('All');
 
-  
+
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -45,27 +45,28 @@ const HomeScreen = ({ navigation }) => {
         console.log('Fetched data:', data); // Log to inspect the structure
         setMovies(data);
         setFilteredMovies(data);
+        alert(`Fetched ${data.length} movies`);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
-  
+
     fetchMovies();
   }, []);
-  
-  
 
-  
-  
 
- 
+
+
+
+
+
 
   const handleSearch = (text) => {
     setSearchQuery(text);
     if (text === '') {
       setFilteredMovies(movies);
     } else {
-      const filtered = movies.filter(movie => 
+      const filtered = movies.filter(movie =>
         movie.name.toLowerCase().includes(text.toLowerCase())
       );
       setFilteredMovies(filtered);
@@ -92,7 +93,7 @@ const HomeScreen = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Ionicons name="menu" size={30} onPress={() => alert('Hamburger Menu clicked')} />
-          <Text>Cinemas</Text>
+        <Text>Cinemas</Text>
         <Ionicons name="person-circle" size={30} onPress={() => navigation.navigate('Profile', { message: 'Profile Screen Placeholder' })} />
       </View>
 
@@ -114,18 +115,15 @@ const HomeScreen = ({ navigation }) => {
         data={filteredMovies}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => navigation.navigate('MovieDetailsScreen', { movie: item })}>
+          <TouchableOpacity onPress={() => navigation.navigate('MovieDetailsScreen', { movieId: item.id })} style={{ backgroundColor: "red" }}>
             <View style={styles.movieItem}>
-              <Image source={{ uri: item.poster }} style={styles.poster} />
-              <Text style={styles.movieName}>{item.name}</Text>
+              <Image source={{ uri: item.poster_url }} style={styles.poster} />
+              <Text style={styles.movieName}>{item.title}</Text>
             </View>
           </TouchableOpacity>
         )}
       />
 
-      <TouchableOpacity style={styles.myListButton} onPress={() => navigation.navigate('MyListScreen')}>
-        <Text style={styles.myListButtonText}>Go to My List</Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -157,6 +155,8 @@ const styles = StyleSheet.create({
   movieItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    height: 75,
+    width: 100,
     marginBottom: 10,
   },
   poster: {

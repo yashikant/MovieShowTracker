@@ -4,59 +4,80 @@ import axios from 'axios';
 import Icon from 'react-native-vector-icons/FontAwesome'; // Ensure you have this library installed
 
 const MovieDetailsScreen = ({ route, navigation }) => {
-  const { movieId, refreshMyList } = route.params;
+  const [movieId, setMovieId] = useState(undefined);
   const [movie, setMovie] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
 
   useEffect(() => {
+    console.log("Movie ID from route:", route.params.movieId);
+    setMovieId(route.params.movieId);
+  }, [])
+
+  useEffect(() => {
+    if (!movieId) {
+      return;
+    }
     console.log("Fetching details for movie ID:", movieId);
     fetchMovieDetails();
-  
+
     // Load stored status for consistency
-    const storedStatus = localStorage.getItem(`movieStatus_${movieId}`);
-    if (storedStatus) {
-      setSelectedStatus(storedStatus);
-    }
+    // const storedStatus = localStorage.getItem(`movieStatus_${movieId}`);
+    // if (storedStatus) {
+    //   setSelectedStatus(storedStatus);
+    // }
   }, [movieId]);
 
   const fetchMovieDetails = async () => {
     try {
       const response = await axios.get(`https://api.rapidmock.com/api/vikuman/v1/movies?id=${movieId}`);
       console.log("Movie details fetched:", response.data);
-  
+
       setMovie(response.data);
-  
-      // Fetch the movie status from your watchlist API if available
-      const statusResponse = await axios.get(`https://api.rapidmock.com/api/vikuman/v1/mylist/status?movieId=${movieId}`);
-      console.log("Current movie status:", statusResponse.data);
-      if (statusResponse.data.status) {
-        setSelectedStatus(statusResponse.data.status);
-      }
+
+      const myList = await (await axios.get("https://api.rapidmock.com/api/vikuman/v1/mylist")).data
+      const toWatch = myList["To Watch"];
+      const watched = myList["Watched"];
+      // console.log("To Watch:", toWatch);
+      // console.log("Watched:", watched);
+      const movieStatus = toWatch.find((movie) => movie.id === movieId) ? "To Watch" : watched.find((movie) => movie.id === movieId) ? "Watched" : null;
+      setSelectedStatus(movieStatus);
+      console.log("Current movie status:", movieStatus);
+      // myList.data.forEach((movie) => {
+      //   if (movie.id === movieId) {
+      //     setSelectedStatus(movie.status);
+      //   }
+      // })
+      // // Fetch the movie status from your watchlist API if available
+      // const statusResponse = await axios.get(`https://api.rapidmock.com/api/vikuman/v1/mylist/status?movieId=${movieId}`);
+      // console.log("Current movie status:", statusResponse.data);
+      // if (statusResponse.data.status) {
+      //   setSelectedStatus(statusResponse.data.status);
+      // }
     } catch (error) {
       console.error("Error fetching movie details or status:", error);
     }
   };
-  
+
 
   const updateWatchList = async (status) => {
     try {
-      await axios.post('https://api.rapidmock.com/api/vikuman/v1/mylist/add', {
+      const response = await axios.post('https://api.rapidmock.com/api/vikuman/v1/mylist/add', {
         movieId: movie.id,
         status,
       });
+      console.log("Updated watch list:", response.data);
       setSelectedStatus(status);
-  
+
       // Save status to local storage for consistency
       localStorage.setItem(`movieStatus_${movie.id}`, status);
-  
-      if (refreshMyList) {
-        refreshMyList();
-      }
+
+      // if (refreshMyList) {
+      //   refreshMyList();
+      // }
     } catch (error) {
       console.error("Error updating watch list:", error);
     }
   };
-  
 
   const toggleStatus = (status) => {
     setSelectedStatus(selectedStatus === status ? null : status);

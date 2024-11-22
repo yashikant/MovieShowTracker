@@ -17,7 +17,11 @@ const MyListScreen = () => {
   const fetchMyList = async () => {
     try {
       const response = await axios.get('https://api.rapidmock.com/api/vikuman/v1/mylist');
-      const { toWatch, watched } = response.data;
+      const list = response.data;
+      const toWatch = list["To Watch"];
+      const watched = list["Watched"];
+      // const toWatch = list["To Watch"];
+      // const watched = list["Watched"];
       setToWatchList(toWatch);
       setWatchedList(watched);
     } catch (error) {
@@ -35,13 +39,13 @@ const MyListScreen = () => {
       <FlatList
         data={toWatchList}
         renderItem={({ item }) => renderMovieCard(item)}
-        keyExtractor={item => item.id.toString()}
+        keyExtractor={item => item.id}
       />
       <Text style={styles.header}>Watched</Text>
       <FlatList
         data={watchedList}
         renderItem={({ item }) => renderMovieCard(item)}
-        keyExtractor={item => item.id.toString()}
+        keyExtractor={item => item.id}
       />
     </View>
   );
